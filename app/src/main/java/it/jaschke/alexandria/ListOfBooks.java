@@ -11,9 +11,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
 import it.jaschke.alexandria.api.BookListAdapter;
 import it.jaschke.alexandria.api.Callback;
 import it.jaschke.alexandria.data.AlexandriaContract;
@@ -21,12 +23,17 @@ import it.jaschke.alexandria.data.AlexandriaContract;
 
 public class ListOfBooks extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private BookListAdapter bookListAdapter;
-    private ListView bookList;
-    private int position = ListView.INVALID_POSITION;
-    private EditText searchText;
-
     private final int LOADER_ID = 10;
+
+    private BookListAdapter bookListAdapter;
+    private int position = ListView.INVALID_POSITION;
+
+    @Bind(R.id.listOfBooks)
+    ListView bookList;
+    @Bind(R.id.searchText)
+    TextView searchText;
+    @Bind(R.id.searchButton)
+    View searchButton;
 
     public ListOfBooks() {
     }
@@ -38,6 +45,8 @@ public class ListOfBooks extends Fragment implements LoaderManager.LoaderCallbac
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_list_of_books, container, false);
+        ButterKnife.bind(this, view);
 
         Cursor cursor = getActivity().getContentResolver().query(
                 AlexandriaContract.BookEntry.CONTENT_URI,
@@ -49,9 +58,8 @@ public class ListOfBooks extends Fragment implements LoaderManager.LoaderCallbac
 
 
         bookListAdapter = new BookListAdapter(getActivity(), cursor, 0);
-        View rootView = inflater.inflate(R.layout.fragment_list_of_books, container, false);
-        searchText = (EditText) rootView.findViewById(R.id.searchText);
-        rootView.findViewById(R.id.searchButton).setOnClickListener(
+
+        searchButton.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -60,7 +68,6 @@ public class ListOfBooks extends Fragment implements LoaderManager.LoaderCallbac
                 }
         );
 
-        bookList = (ListView) rootView.findViewById(R.id.listOfBooks);
         bookList.setAdapter(bookListAdapter);
 
         bookList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -75,8 +82,15 @@ public class ListOfBooks extends Fragment implements LoaderManager.LoaderCallbac
             }
         });
 
-        return rootView;
+        return view;
     }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        ButterKnife.unbind(this);
+    }
+
 
     private void restartLoader() {
         getLoaderManager().restartLoader(LOADER_ID, null, this);

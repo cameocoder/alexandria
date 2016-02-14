@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.LocalBroadcastManager;
@@ -17,15 +18,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
 import it.jaschke.alexandria.api.Callback;
 
 
 public class MainActivity extends AppCompatActivity implements NavigationDrawerFragment.NavigationDrawerCallbacks, Callback {
 
-    /**
-     * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
-     */
-    private NavigationDrawerFragment navigationDrawerFragment;
+    public static final String MESSAGE_EVENT = "MESSAGE_EVENT";
+    public static final String MESSAGE_KEY = "MESSAGE_EXTRA";
 
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
@@ -34,8 +35,15 @@ public class MainActivity extends AppCompatActivity implements NavigationDrawerF
     public static boolean IS_TABLET = false;
     private BroadcastReceiver messageReciever;
 
-    public static final String MESSAGE_EVENT = "MESSAGE_EVENT";
-    public static final String MESSAGE_KEY = "MESSAGE_EXTRA";
+    /**
+     * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
+     */
+    private NavigationDrawerFragment navigationDrawerFragment;
+
+    @Bind(R.id.drawer_layout) DrawerLayout drawerLayout;
+    @Nullable
+    @Bind(R.id.right_container)
+    View rightContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,18 +54,18 @@ public class MainActivity extends AppCompatActivity implements NavigationDrawerF
         } else {
             setContentView(R.layout.activity_main);
         }
+        ButterKnife.bind(this);
 
         messageReciever = new MessageReciever();
         IntentFilter filter = new IntentFilter(MESSAGE_EVENT);
         LocalBroadcastManager.getInstance(this).registerReceiver(messageReciever, filter);
 
-        navigationDrawerFragment = (NavigationDrawerFragment)
-                getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
         title = getTitle();
 
         // Set up the drawer.
-        navigationDrawerFragment.setUp(R.id.navigation_drawer,
-                (DrawerLayout) findViewById(R.id.drawer_layout));
+        navigationDrawerFragment = (NavigationDrawerFragment)
+                getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
+        navigationDrawerFragment.setUp(R.id.navigation_drawer, drawerLayout);
     }
 
     @Override
@@ -141,7 +149,7 @@ public class MainActivity extends AppCompatActivity implements NavigationDrawerF
         fragment.setArguments(args);
 
         int id = R.id.container;
-        if (findViewById(R.id.right_container) != null) {
+        if (rightContainer != null) {
             id = R.id.right_container;
         }
         getSupportFragmentManager().beginTransaction()

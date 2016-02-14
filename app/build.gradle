@@ -12,9 +12,9 @@ android {
         versionName "1.0"
     }
 
-    jacoco {
-        version = '0.6.2.201302030002'
-    }
+//    jacoco {
+//        version = '0.6.2.201302030002'
+//    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
@@ -24,7 +24,7 @@ android {
         release {
             testCoverageEnabled = true
             minifyEnabled true
-            proguardFiles 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         debug {
             testCoverageEnabled = true
@@ -39,6 +39,12 @@ android {
 
 dependencies {
     compile 'com.android.support:appcompat-v7:23.1.1'
-    compile 'com.jakewharton:butterknife:7.0.1'
     compile 'com.android.support:design:23.1.1'
+
+    compile 'com.journeyapps:zxing-android-embedded:3.0.2@aar'
+    compile 'com.google.zxing:core:3.2.0'
+
+    compile 'com.jakewharton:butterknife:7.0.1'
+    compile 'com.squareup.picasso:picasso:2.5.2'
+
 }
