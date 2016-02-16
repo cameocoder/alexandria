@@ -181,16 +181,18 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
         bookSubTitle.setText(subTitle);
 
         String author = data.getString(data.getColumnIndex(AlexandriaContract.AuthorEntry.AUTHOR));
-        String[] authorsArr = author.split(",");
-        authors.setLines(authorsArr.length);
-        authors.setText(author.replace(",", "\n"));
+        if (author != null) {
+            String[] authorsArr = author.split(",");
+            authors.setLines(authorsArr.length);
+            authors.setText(author.replace(",", "\n"));
+        }
 
         String imgUrl = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.IMAGE_URL));
         Picasso.with(getContext()).load(imgUrl).placeholder(R.drawable.ic_launcher).error(R.drawable.ic_launcher).into(bookCover);
         bookCover.setVisibility(View.VISIBLE);
 
-        String categorie = data.getString(data.getColumnIndex(AlexandriaContract.CategoryEntry.CATEGORY));
-        categories.setText(categorie);
+        String category = data.getString(data.getColumnIndex(AlexandriaContract.CategoryEntry.CATEGORY));
+        categories.setText(category);
 
         saveButton.setVisibility(View.VISIBLE);
         deleteButton.setVisibility(View.VISIBLE);

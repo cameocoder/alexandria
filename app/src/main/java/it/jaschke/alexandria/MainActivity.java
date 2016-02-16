@@ -1,18 +1,26 @@
 package it.jaschke.alexandria;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -29,6 +37,7 @@ public class MainActivity extends AppCompatActivity implements NavigationDrawerF
 
     public static final String MESSAGE_EVENT = "MESSAGE_EVENT";
     public static final String MESSAGE_KEY = "MESSAGE_EXTRA";
+    private static final int REQUEST_ACCESS_CAMERA = 0;
 
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
@@ -42,7 +51,8 @@ public class MainActivity extends AppCompatActivity implements NavigationDrawerF
      */
     private NavigationDrawerFragment navigationDrawerFragment;
 
-    @Bind(R.id.drawer_layout) DrawerLayout drawerLayout;
+    @Bind(R.id.drawer_layout)
+    DrawerLayout drawerLayout;
     @Nullable
     @Bind(R.id.right_container)
     View rightContainer;
@@ -88,6 +98,72 @@ public class MainActivity extends AppCompatActivity implements NavigationDrawerF
         navigationDrawerFragment = (NavigationDrawerFragment)
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
         navigationDrawerFragment.setUp(R.id.navigation_drawer, drawerLayout);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        checkCameraPermission();
+    }
+
+    private void checkCameraPermission() {
+        final String permission = Manifest.permission.CAMERA;
+        if (ContextCompat.checkSelfPermission(this, permission)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.CAMERA)) {
+                showRequestPermissionRationale(getString(R.string.camera_permission), permission, REQUEST_ACCESS_CAMERA);
+
+            } else {
+                requestCameraPermission(permission, REQUEST_ACCESS_CAMERA);
+            }
+        }
+    }
+
+    private void requestCameraPermission(final String permission, final int requestCode) {
+        ActivityCompat.requestPermissions(this, new String[]{permission}, requestCode);
+    }
+
+    private void showRequestPermissionRationale(final String message, final String permission, final int requestCode) {
+        new AlertDialog.Builder(MainActivity.this)
+                .setMessage(message)
+                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        requestCameraPermission(permission, requestCode);
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+//                        finish();
+                    }
+                })
+                .create()
+                .show();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case REQUEST_ACCESS_CAMERA: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPref.edit();
+                    editor.putBoolean(getString(R.string.camera_access), true);
+                    editor.apply();
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                break;
+            }
+        }
     }
 
     @Override
