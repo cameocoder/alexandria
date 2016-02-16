@@ -87,6 +87,13 @@ public class BookDetail extends Fragment implements LoaderManager.LoaderCallback
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        View fab = getActivity().findViewById(R.id.fab);
+        fab.setVisibility(View.GONE);
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
         ButterKnife.unbind(this);

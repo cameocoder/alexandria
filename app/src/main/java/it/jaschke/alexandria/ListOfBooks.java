@@ -86,6 +86,14 @@ public class ListOfBooks extends Fragment implements LoaderManager.LoaderCallbac
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+
+        View fab = getActivity().findViewById(R.id.fab);
+        fab.setVisibility(View.VISIBLE);
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
         ButterKnife.unbind(this);

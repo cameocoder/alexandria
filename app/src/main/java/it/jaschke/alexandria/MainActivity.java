@@ -84,8 +84,8 @@ public class MainActivity extends AppCompatActivity implements NavigationDrawerF
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                FragmentManager fragmentManager = getSupportFragmentManager();
                 Fragment addBookFragment = new AddBook();
+                FragmentManager fragmentManager = getSupportFragmentManager();
                 fragmentManager.beginTransaction()
                         .replace(R.id.container, addBookFragment)
                         .addToBackStack((String) title)

@@ -38,15 +38,24 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
     private String mScanFormat = "Format:";
     private String mScanContents = "Contents:";
 
-    @Bind(R.id.ean) TextView ean;
-    @Bind(R.id.scan_button) View scanButton;
-    @Bind(R.id.save_button) View saveButton;
-    @Bind(R.id.delete_button) View deleteButton;
-    @Bind(R.id.bookCover) ImageView bookCover;
-    @Bind(R.id.bookTitle) TextView bookTitle;
-    @Bind(R.id.bookSubTitle) TextView bookSubTitle;
-    @Bind(R.id.categories) TextView categories;
-    @Bind(R.id.authors) TextView authors;
+    @Bind(R.id.ean)
+    TextView ean;
+    @Bind(R.id.scan_button)
+    View scanButton;
+    @Bind(R.id.save_button)
+    View saveButton;
+    @Bind(R.id.delete_button)
+    View deleteButton;
+    @Bind(R.id.bookCover)
+    ImageView bookCover;
+    @Bind(R.id.bookTitle)
+    TextView bookTitle;
+    @Bind(R.id.bookSubTitle)
+    TextView bookSubTitle;
+    @Bind(R.id.categories)
+    TextView categories;
+    @Bind(R.id.authors)
+    TextView authors;
 
     public AddBook() {
     }
@@ -129,6 +138,13 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
         }
 
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        View fab = getActivity().findViewById(R.id.fab);
+        fab.setVisibility(View.GONE);
     }
 
     @Override
