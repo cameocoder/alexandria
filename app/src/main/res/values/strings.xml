@@ -32,4 +32,5 @@
     <!-- Preference keys -->
     <string name="camera_access" translatable="false">camera_access</string>
     <string name="camera_permission">This app needs access to the camera in order to scan ISBN bar codes.</string>
+    <string name="no_book_found">No book found</string>
 </resources>

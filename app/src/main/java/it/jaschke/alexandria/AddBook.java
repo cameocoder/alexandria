@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
@@ -142,6 +143,8 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
         if (scanningResult != null) {
             String thirteenDigitIsbn = scanningResult.getContents();
             ean.setText(thirteenDigitIsbn);
+        } else {
+            Toast.makeText(getContext(), intent.getStringExtra(getContext().getString(R.string.no_book_found)), Toast.LENGTH_LONG).show();
         }
     }
 
