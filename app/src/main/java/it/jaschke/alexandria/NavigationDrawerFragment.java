@@ -78,7 +78,6 @@ public class NavigationDrawerFragment extends Fragment {
             mCurrentSelectedPosition = Integer.parseInt(prefs.getString("pref_startFragment", "0"));
             selectItem(mCurrentSelectedPosition);
         }
-
     }
 
     @Override
@@ -99,8 +98,9 @@ public class NavigationDrawerFragment extends Fragment {
                 selectItem(position);
             }
         });
+
         mDrawerListView.setAdapter(new ArrayAdapter<String>(
-                getActionBar().getThemedContext(),
+                getContext(),
                 android.R.layout.simple_list_item_activated_1,
                 android.R.id.text1,
                 new String[]{

@@ -7,12 +7,14 @@ import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -44,6 +46,10 @@ public class MainActivity extends AppCompatActivity implements NavigationDrawerF
     @Nullable
     @Bind(R.id.right_container)
     View rightContainer;
+    @Bind(R.id.toolbar)
+    Toolbar toolbar;
+    @Bind(R.id.fab)
+    FloatingActionButton fab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +67,22 @@ public class MainActivity extends AppCompatActivity implements NavigationDrawerF
         LocalBroadcastManager.getInstance(this).registerReceiver(messageReciever, filter);
 
         title = getTitle();
+
+        setSupportActionBar(toolbar);
+
+//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FragmentManager fragmentManager = getSupportFragmentManager();
+                Fragment addBookFragment = new AddBook();
+                fragmentManager.beginTransaction()
+                        .replace(R.id.container, addBookFragment)
+                        .addToBackStack((String) title)
+                        .commit();
+
+            }
+        });
 
         // Set up the drawer.
         navigationDrawerFragment = (NavigationDrawerFragment)
