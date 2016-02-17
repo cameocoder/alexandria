@@ -15,7 +15,7 @@ import com.squareup.picasso.Picasso;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import it.jaschke.alexandria.R;
-import it.jaschke.alexandria.data.AlexandriaContract;
+import it.jaschke.alexandria.data.BookContract;
 
 /**
  * Created by saj on 11/01/15.
@@ -42,13 +42,13 @@ public class BookListAdapter extends CursorAdapter {
 
         ViewHolder viewHolder = (ViewHolder) view.getTag();
 
-        String imgUrl = cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry.IMAGE_URL));
-        Picasso.with(context).load(imgUrl).placeholder(R.drawable.ic_launcher).error(R.drawable.ic_launcher).into(viewHolder.bookCover);
+        String imgUrl = cursor.getString(cursor.getColumnIndex(BookContract.BookEntry.IMAGE_URL));
+        Picasso.with(context).load(imgUrl).placeholder(R.drawable.ic_action_search).error(R.drawable.ic_action_search).into(viewHolder.bookCover);
 
-        String bookTitle = cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry.TITLE));
+        String bookTitle = cursor.getString(cursor.getColumnIndex(BookContract.BookEntry.TITLE));
         viewHolder.bookTitle.setText(bookTitle);
 
-        String bookSubTitle = cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry.SUBTITLE));
+        String bookSubTitle = cursor.getString(cursor.getColumnIndex(BookContract.BookEntry.SUBTITLE));
         viewHolder.bookSubTitle.setText(bookSubTitle);
     }
 

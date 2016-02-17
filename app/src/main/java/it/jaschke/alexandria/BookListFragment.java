@@ -18,10 +18,10 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import it.jaschke.alexandria.api.BookListAdapter;
 import it.jaschke.alexandria.api.Callback;
-import it.jaschke.alexandria.data.AlexandriaContract;
+import it.jaschke.alexandria.data.BookContract;
 
 
-public class ListOfBooks extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class BookListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private final int LOADER_ID = 10;
 
@@ -35,7 +35,7 @@ public class ListOfBooks extends Fragment implements LoaderManager.LoaderCallbac
     @Bind(R.id.searchButton)
     View searchButton;
 
-    public ListOfBooks() {
+    public BookListFragment() {
     }
 
     @Override
@@ -49,7 +49,7 @@ public class ListOfBooks extends Fragment implements LoaderManager.LoaderCallbac
         ButterKnife.bind(this, view);
 
         Cursor cursor = getActivity().getContentResolver().query(
-                AlexandriaContract.BookEntry.CONTENT_URI,
+                BookContract.BookEntry.CONTENT_URI,
                 null, // leaving "columns" null just returns all the columns.
                 null, // cols for "where" clause
                 null, // values for "where" clause
@@ -63,7 +63,7 @@ public class ListOfBooks extends Fragment implements LoaderManager.LoaderCallbac
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        ListOfBooks.this.restartLoader();
+                        BookListFragment.this.restartLoader();
                     }
                 }
         );
@@ -77,7 +77,7 @@ public class ListOfBooks extends Fragment implements LoaderManager.LoaderCallbac
                 Cursor cursor = bookListAdapter.getCursor();
                 if (cursor != null && cursor.moveToPosition(position)) {
                     ((Callback) getActivity())
-                            .onItemSelected(cursor.getString(cursor.getColumnIndex(AlexandriaContract.BookEntry._ID)));
+                            .onItemSelected(cursor.getString(cursor.getColumnIndex(BookContract.BookEntry._ID)));
                 }
             }
         });
@@ -107,14 +107,14 @@ public class ListOfBooks extends Fragment implements LoaderManager.LoaderCallbac
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
-        final String selection = AlexandriaContract.BookEntry.TITLE + " LIKE ? OR " + AlexandriaContract.BookEntry.SUBTITLE + " LIKE ? ";
+        final String selection = BookContract.BookEntry.TITLE + " LIKE ? OR " + BookContract.BookEntry.SUBTITLE + " LIKE ? ";
         String searchString = searchText.getText().toString();
 
         if (searchString.length() > 0) {
             searchString = "%" + searchString + "%";
             return new CursorLoader(
                     getActivity(),
-                    AlexandriaContract.BookEntry.CONTENT_URI,
+                    BookContract.BookEntry.CONTENT_URI,
                     null,
                     selection,
                     new String[]{searchString, searchString},
@@ -124,7 +124,7 @@ public class ListOfBooks extends Fragment implements LoaderManager.LoaderCallbac
 
         return new CursorLoader(
                 getActivity(),
-                AlexandriaContract.BookEntry.CONTENT_URI,
+                BookContract.BookEntry.CONTENT_URI,
                 null,
                 null,
                 null,

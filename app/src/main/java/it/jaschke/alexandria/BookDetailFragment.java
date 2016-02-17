@@ -22,11 +22,11 @@ import com.squareup.picasso.Picasso;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import it.jaschke.alexandria.data.AlexandriaContract;
+import it.jaschke.alexandria.data.BookContract;
 import it.jaschke.alexandria.services.BookService;
 
 
-public class BookDetail extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class BookDetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     public static final String EAN_KEY = "EAN";
     private static final int LOADER_ID = 10;
@@ -45,15 +45,13 @@ public class BookDetail extends Fragment implements LoaderManager.LoaderCallback
     TextView authorsView;
     @Bind(R.id.categories)
     TextView categoriesView;
-    @Bind(R.id.backButton)
-    View backButton;
     @Bind(R.id.delete_button)
     View deleteButton;
     @Nullable
-    @Bind(R.id.right_container)
+    @Bind(R.id.item_detail_container)
     View rightContainer;
 
-    public BookDetail() {
+    public BookDetailFragment() {
     }
 
     @Override
@@ -64,12 +62,12 @@ public class BookDetail extends Fragment implements LoaderManager.LoaderCallback
 
     @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_full_book, container, false);
-
+        View view = inflater.inflate(R.layout.fragment_book_detail, container, false);
         ButterKnife.bind(this, view);
+
         Bundle arguments = getArguments();
         if (arguments != null) {
-            ean = arguments.getString(BookDetail.EAN_KEY);
+            ean = arguments.getString(BookDetailFragment.EAN_KEY);
             getLoaderManager().restartLoader(LOADER_ID, null, this);
         }
 
@@ -127,7 +125,7 @@ public class BookDetail extends Fragment implements LoaderManager.LoaderCallback
     public android.support.v4.content.Loader<Cursor> onCreateLoader(int id, Bundle args) {
         return new CursorLoader(
                 getActivity(),
-                AlexandriaContract.BookEntry.buildFullBookUri(Long.parseLong(ean)),
+                BookContract.BookEntry.buildFullBookUri(Long.parseLong(ean)),
                 null,
                 null,
                 null,
@@ -141,30 +139,25 @@ public class BookDetail extends Fragment implements LoaderManager.LoaderCallback
             return;
         }
 
-        bookTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.TITLE));
+        bookTitle = data.getString(data.getColumnIndex(BookContract.BookEntry.TITLE));
         bookTitleView.setText(bookTitle);
 
-        String subTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.SUBTITLE));
+        String subTitle = data.getString(data.getColumnIndex(BookContract.BookEntry.SUBTITLE));
         bookSubTitleView.setText(subTitle);
 
-        String desc = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.DESC));
+        String desc = data.getString(data.getColumnIndex(BookContract.BookEntry.DESC));
         bookDescView.setText(desc);
 
-        String authors = data.getString(data.getColumnIndex(AlexandriaContract.AuthorEntry.AUTHOR));
+        String authors = data.getString(data.getColumnIndex(BookContract.AuthorEntry.AUTHOR));
         String[] authorsArr = authors.split(",");
         authorsView.setLines(authorsArr.length);
         authorsView.setText(authors.replace(",", "\n"));
 
-        String imgUrl = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.IMAGE_URL));
-        Picasso.with(getContext()).load(imgUrl).placeholder(R.drawable.ic_launcher).error(R.drawable.ic_launcher).into(bookCoverView);
+        String imgUrl = data.getString(data.getColumnIndex(BookContract.BookEntry.IMAGE_URL));
+        Picasso.with(getContext()).load(imgUrl).placeholder(R.drawable.ic_action_search).error(R.drawable.ic_action_search).into(bookCoverView);
 
-        String categories = data.getString(data.getColumnIndex(AlexandriaContract.CategoryEntry.CATEGORY));
+        String categories = data.getString(data.getColumnIndex(BookContract.CategoryEntry.CATEGORY));
         categoriesView.setText(categories);
-
-        if (rightContainer != null) {
-            backButton.setVisibility(View.INVISIBLE);
-        }
-
     }
 
     @Override

@@ -16,7 +16,7 @@
 
     <string name="ok_button">Next</string>
     <string name="cancel_button">Cancel</string>
-    <string name="not_found">No Book found</string>
+    <string name="not_found">No book found</string>
     <string name="search">Search</string>
     <string name="delete">Delete Book</string>
     <string name="pref_startScreen">Select Startscreen</string>
@@ -32,5 +32,5 @@
     <!-- Preference keys -->
     <string name="camera_access" translatable="false">camera_access</string>
     <string name="camera_permission">This app needs access to the camera in order to scan ISBN bar codes.</string>
-    <string name="no_book_found">No book found</string>
+    <string name="populate">Populate</string>
 </resources>

@@ -1,6 +1,7 @@
 package it.jaschke.alexandria;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -18,7 +19,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -26,6 +26,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import butterknife.Bind;
@@ -33,7 +34,7 @@ import butterknife.ButterKnife;
 import it.jaschke.alexandria.api.Callback;
 
 
-public class MainActivity extends AppCompatActivity implements NavigationDrawerFragment.NavigationDrawerCallbacks, Callback {
+public class MainActivity extends AppCompatActivity implements Callback, FragmentManager.OnBackStackChangedListener {
 
     public static final String MESSAGE_EVENT = "MESSAGE_EVENT";
     public static final String MESSAGE_KEY = "MESSAGE_EXTRA";
@@ -46,15 +47,8 @@ public class MainActivity extends AppCompatActivity implements NavigationDrawerF
     public static boolean IS_TABLET = false;
     private BroadcastReceiver messageReciever;
 
-    /**
-     * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
-     */
-    private NavigationDrawerFragment navigationDrawerFragment;
-
-    @Bind(R.id.drawer_layout)
-    DrawerLayout drawerLayout;
     @Nullable
-    @Bind(R.id.right_container)
+    @Bind(R.id.item_detail_container)
     View rightContainer;
     @Bind(R.id.toolbar)
     Toolbar toolbar;
@@ -65,11 +59,8 @@ public class MainActivity extends AppCompatActivity implements NavigationDrawerF
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         IS_TABLET = isTablet();
-        if (IS_TABLET) {
-            setContentView(R.layout.activity_main_tablet);
-        } else {
-            setContentView(R.layout.activity_main);
-        }
+        setContentView(R.layout.activity_main);
+
         ButterKnife.bind(this);
 
         messageReciever = new MessageReciever();
@@ -80,24 +71,29 @@ public class MainActivity extends AppCompatActivity implements NavigationDrawerF
 
         setSupportActionBar(toolbar);
 
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        if (savedInstanceState == null) {
+            // Create the detail fragment and add it to the activity
+            // using a fragment transaction.
+            BookListFragment fragment = new BookListFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.container, fragment)
+                    .commit();
+        }
+
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Fragment addBookFragment = new AddBook();
-                FragmentManager fragmentManager = getSupportFragmentManager();
-                fragmentManager.beginTransaction()
-                        .replace(R.id.container, addBookFragment)
-                        .addToBackStack((String) title)
-                        .commit();
-
+                Fragment addBookFragment = new AddBookFragment();
+                switchToFragment(addBookFragment);
             }
         });
 
-        // Set up the drawer.
-        navigationDrawerFragment = (NavigationDrawerFragment)
-                getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
-        navigationDrawerFragment.setUp(R.id.navigation_drawer, drawerLayout);
+        // Listen for changes in the back stack
+        getSupportFragmentManager().addOnBackStackChangedListener(this);
+
+        // Handle when activity is recreated like on orientation Change
+        shouldDisplayHomeUp();
+
     }
 
     @Override
@@ -105,6 +101,15 @@ public class MainActivity extends AppCompatActivity implements NavigationDrawerF
         super.onResume();
 
         checkCameraPermission();
+    }
+
+    private void switchToFragment(Fragment fragment) {
+        hideKeyboard(this);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction()
+                .replace(R.id.container, fragment)
+                .addToBackStack((String) title)
+                .commit();
     }
 
     private void checkCameraPermission() {
@@ -166,54 +171,22 @@ public class MainActivity extends AppCompatActivity implements NavigationDrawerF
         }
     }
 
-    @Override
-    public void onNavigationDrawerItemSelected(int position) {
-
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        Fragment nextFragment;
-
-        switch (position) {
-            default:
-            case 0:
-                nextFragment = new ListOfBooks();
-                break;
-            case 1:
-                nextFragment = new AddBook();
-                break;
-            case 2:
-                nextFragment = new About();
-                break;
-
-        }
-
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, nextFragment)
-                .addToBackStack((String) title)
-                .commit();
-    }
-
     public void setTitle(int titleId) {
         title = getString(titleId);
     }
 
     public void restoreActionBar() {
         ActionBar actionBar = getSupportActionBar();
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-        actionBar.setDisplayShowTitleEnabled(true);
-        actionBar.setTitle(title);
+        if (actionBar != null) {
+            actionBar.setDisplayShowTitleEnabled(true);
+            actionBar.setTitle(title);
+        }
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if (!navigationDrawerFragment.isDrawerOpen()) {
-            // Only show items in the action bar relevant to this screen
-            // if the drawer is not showing. Otherwise, let the drawer
-            // decide what to show in the action bar.
-            getMenuInflater().inflate(R.menu.main, menu);
-            restoreActionBar();
-            return true;
-        }
+        getMenuInflater().inflate(R.menu.main, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -227,6 +200,9 @@ public class MainActivity extends AppCompatActivity implements NavigationDrawerF
         if (id == R.id.action_settings) {
             startActivity(new Intent(this, SettingsActivity.class));
             return true;
+        } else if (id == R.id.action_about) {
+            Fragment about = new About();
+            switchToFragment(about);
         }
 
         return super.onOptionsItemSelected(item);
@@ -241,20 +217,42 @@ public class MainActivity extends AppCompatActivity implements NavigationDrawerF
     @Override
     public void onItemSelected(String ean) {
         Bundle args = new Bundle();
-        args.putString(BookDetail.EAN_KEY, ean);
+        args.putString(BookDetailFragment.EAN_KEY, ean);
 
-        BookDetail fragment = new BookDetail();
+        BookDetailFragment fragment = new BookDetailFragment();
         fragment.setArguments(args);
 
         int id = R.id.container;
         if (rightContainer != null) {
-            id = R.id.right_container;
+            id = R.id.item_detail_container;
         }
         getSupportFragmentManager().beginTransaction()
                 .replace(id, fragment)
                 .addToBackStack("Book Detail")
                 .commit();
 
+    }
+
+    @Override
+    public void onBackStackChanged() {
+        shouldDisplayHomeUp();
+    }
+
+    public void shouldDisplayHomeUp() {
+        // http://stackoverflow.com/questions/13086840/actionbar-up-navigation-with-fragments
+        // Enable Up button only  if there are entries in the back stack
+        boolean canback = getSupportFragmentManager().getBackStackEntryCount() > 0;
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(canback);
+        }
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        // This method is called when the up button is pressed. Just the pop back stack.
+        getSupportFragmentManager().popBackStack();
+        return true;
     }
 
     private class MessageReciever extends BroadcastReceiver {
@@ -276,12 +274,17 @@ public class MainActivity extends AppCompatActivity implements NavigationDrawerF
                 >= Configuration.SCREENLAYOUT_SIZE_LARGE;
     }
 
-    @Override
-    public void onBackPressed() {
-        if (getSupportFragmentManager().getBackStackEntryCount() < 2) {
-            finish();
-        }
-        super.onBackPressed();
+    public static void hideKeyboard(Context context) {
+        // http://stackoverflow.com/questions/26911469/hide-keyboard-when-navigating-from-a-fragment-to-another
+        InputMethodManager inputManager = (InputMethodManager) context
+                .getSystemService(Context.INPUT_METHOD_SERVICE);
+
+        // check if no view has focus:
+        View v = ((Activity) context).getCurrentFocus();
+        if (v == null)
+            return;
+
+        inputManager.hideSoftInputFromWindow(v.getWindowToken(), 0);
     }
 
 
