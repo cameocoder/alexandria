@@ -3,6 +3,7 @@ package it.jaschke.alexandria;
 import android.app.Activity;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -23,7 +24,7 @@ import it.jaschke.alexandria.data.BookContract;
 
 public class BookListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private final int LOADER_ID = 10;
+    private final int BOOK_LOADER = 10;
 
     private BookListAdapter bookListAdapter;
     private int position = ListView.INVALID_POSITION;
@@ -39,8 +40,9 @@ public class BookListFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        getLoaderManager().initLoader(BOOK_LOADER, null, this);
     }
 
     @Override
@@ -48,16 +50,8 @@ public class BookListFragment extends Fragment implements LoaderManager.LoaderCa
         View view = inflater.inflate(R.layout.fragment_list_of_books, container, false);
         ButterKnife.bind(this, view);
 
-        Cursor cursor = getActivity().getContentResolver().query(
-                BookContract.BookEntry.CONTENT_URI,
-                null, // leaving "columns" null just returns all the columns.
-                null, // cols for "where" clause
-                null, // values for "where" clause
-                null  // sort order
-        );
-
-
-        bookListAdapter = new BookListAdapter(getActivity(), cursor, 0);
+        bookListAdapter = new BookListAdapter(getActivity(), null);
+        bookList.setAdapter(bookListAdapter);
 
         searchButton.setOnClickListener(
                 new View.OnClickListener() {
@@ -68,7 +62,6 @@ public class BookListFragment extends Fragment implements LoaderManager.LoaderCa
                 }
         );
 
-        bookList.setAdapter(bookListAdapter);
 
         bookList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -101,40 +94,49 @@ public class BookListFragment extends Fragment implements LoaderManager.LoaderCa
 
 
     private void restartLoader() {
-        getLoaderManager().restartLoader(LOADER_ID, null, this);
+        getLoaderManager().restartLoader(BOOK_LOADER, null, this);
     }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
-        final String selection = BookContract.BookEntry.TITLE + " LIKE ? OR " + BookContract.BookEntry.SUBTITLE + " LIKE ? ";
-        String searchString = searchText.getText().toString();
+        switch (id) {
+            case BOOK_LOADER: {
+                final String selection = BookContract.BookEntry.TITLE + " LIKE ? OR " + BookContract.BookEntry.SUBTITLE + " LIKE ? ";
+                String searchString = searchText.getText().toString();
 
-        if (searchString.length() > 0) {
-            searchString = "%" + searchString + "%";
-            return new CursorLoader(
-                    getActivity(),
-                    BookContract.BookEntry.CONTENT_URI,
-                    null,
-                    selection,
-                    new String[]{searchString, searchString},
-                    null
-            );
+                if (searchString.length() > 0) {
+                    searchString = "%" + searchString + "%";
+                    return new CursorLoader(
+                            getActivity(),
+                            BookContract.BookEntry.CONTENT_URI,
+                            null,
+                            selection,
+                            new String[]{searchString, searchString},
+                            null
+                    );
+                }
+
+                return new CursorLoader(
+                        getActivity(),
+                        BookContract.BookEntry.CONTENT_URI,
+                        null,
+                        null,
+                        null,
+                        null
+                );
+            }
         }
-
-        return new CursorLoader(
-                getActivity(),
-                BookContract.BookEntry.CONTENT_URI,
-                null,
-                null,
-                null,
-                null
-        );
+        return null;
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        bookListAdapter.swapCursor(data);
+        if (bookListAdapter == null) {
+            bookListAdapter = new BookListAdapter(getActivity(), data);
+        } else {
+            bookListAdapter.swapCursor(data);
+        }
         if (position != ListView.INVALID_POSITION) {
             bookList.smoothScrollToPosition(position);
         }
